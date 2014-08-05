@@ -149,7 +149,6 @@ class NaoCam (NaoNode):
                                ('hue', kCameraHueID), ('sharpness', kCameraSharpnessID),
                                ('auto_white_balance', kCameraAutoWhiteBalanceID)
                                ]:
-            rospy.loginfo('updating camera parameters')
             if self.config[key] != new_config[key] or is_camera_new:
                 self.camProxy.setCamerasParameter(self.nameId, naoqi_key, new_config[key])
 
@@ -254,12 +253,18 @@ class NaoCam (NaoNode):
             r.sleep()
 
 
-        self.camProxy.unsubscribe(self.nameId)
+        if (self.nameId):
+            self.camProxy.unsubscribe(self.nameId)
+        rospy.loginfo("unsubscribing from camera ")
 
 if __name__ == "__main__":
     try:
         naocam = NaoCam()
         naocam.main_loop()
+    except KeyboardInterrupt as key:
+        print "control c pressed"
     except RuntimeError as e:
         rospy.logerr('Something went wrong: %s' % str(e) )
-    rospy.loginfo('Camera stopped')
+    finally:
+        rospy.signal_shutdown("exiting")
+        rospy.loginfo('Camera stopped')
